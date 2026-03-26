@@ -1,0 +1,105 @@
+CREATE TABLE companies (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(160) NOT NULL,
+  legal_name VARCHAR(180) NULL,
+  document VARCHAR(40) NULL,
+  email VARCHAR(160) NOT NULL UNIQUE,
+  phone VARCHAR(40) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE users (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(140) NOT NULL,
+  email VARCHAR(160) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('owner', 'manager', 'staff') NOT NULL DEFAULT 'owner',
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_users_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+);
+
+CREATE TABLE horses (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(160) NOT NULL,
+  tag_number VARCHAR(60) NOT NULL,
+  birth_date DATE NULL,
+  breed VARCHAR(120) NOT NULL,
+  photo_url LONGTEXT NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_horse_tag_company (company_id, tag_number),
+  CONSTRAINT fk_horses_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+);
+
+CREATE TABLE feeding_records (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT UNSIGNED NOT NULL,
+  horse_id BIGINT UNSIGNED NOT NULL,
+  feeding_date DATE NOT NULL,
+  feed_type VARCHAR(120) NOT NULL,
+  feed_quantity_kg DECIMAL(10,2) NOT NULL,
+  hay_quantity_kg DECIMAL(10,2) NOT NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_feeding_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+  CONSTRAINT fk_feeding_horse FOREIGN KEY (horse_id) REFERENCES horses(id) ON DELETE CASCADE
+);
+
+CREATE TABLE weight_records (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT UNSIGNED NOT NULL,
+  horse_id BIGINT UNSIGNED NOT NULL,
+  record_date DATE NOT NULL,
+  weight_kg DECIMAL(10,2) NOT NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_weight_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+  CONSTRAINT fk_weight_horse FOREIGN KEY (horse_id) REFERENCES horses(id) ON DELETE CASCADE
+);
+
+CREATE TABLE alert_settings (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT UNSIGNED NOT NULL,
+  care_type ENUM('shoeing', 'dentistry', 'vaccine', 'deworming') NOT NULL,
+  interval_days INT NOT NULL,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_alert_company_type (company_id, care_type),
+  CONSTRAINT fk_alert_settings_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+);
+
+CREATE TABLE care_records (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT UNSIGNED NOT NULL,
+  horse_id BIGINT UNSIGNED NOT NULL,
+  care_type ENUM('shoeing', 'dentistry', 'vaccine', 'deworming') NOT NULL,
+  performed_at DATE NOT NULL,
+  next_due_at DATE NULL,
+  provider_name VARCHAR(140) NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_care_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+  CONSTRAINT fk_care_horse FOREIGN KEY (horse_id) REFERENCES horses(id) ON DELETE CASCADE
+);
+
+CREATE TABLE reproduction_records (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_id BIGINT UNSIGNED NOT NULL,
+  horse_id BIGINT UNSIGNED NOT NULL,
+  breeding_date DATE NULL,
+  estimated_birth_date DATE NULL,
+  actual_birth_date DATE NULL,
+  weaning_date DATE NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_reproduction_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+  CONSTRAINT fk_reproduction_horse FOREIGN KEY (horse_id) REFERENCES horses(id) ON DELETE CASCADE
+);
