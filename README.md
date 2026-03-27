@@ -74,6 +74,7 @@ Variaveis para copiar no Render:
 
 ```env
 PORT=4000
+DATABASE_URL=mysql://SEU_USUARIO:SUA_SENHA@SEU_HOST_MYSQL:3306/horse_flow
 DB_HOST=SEU_HOST_MYSQL
 DB_PORT=3306
 DB_NAME=horse_flow
@@ -84,6 +85,8 @@ JWT_SECRET=uma_chave_bem_forte
 JWT_EXPIRES_IN=12h
 CLIENT_URLS=https://SEU-SITE.netlify.app,https://deploy-preview-1--SEU-SITE.netlify.app
 ```
+
+Se voce usar `DATABASE_URL`, ela passa a ser a forma principal de conexao. Os campos `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` e `DB_PASSWORD` ficam como fallback local.
 
 ## 6. Fluxo completo de publicacao
 

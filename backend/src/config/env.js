@@ -13,6 +13,7 @@ function parseAllowedOrigins() {
 
 export const env = {
   port: Number(process.env.PORT || 4000),
+  databaseUrl: process.env.DATABASE_URL || "",
   db: {
     host: process.env.DB_HOST || "localhost",
     port: Number(process.env.DB_PORT || 3306),
