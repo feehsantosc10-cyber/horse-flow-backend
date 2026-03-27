@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { request } from "../lib/api";
+import { request } from "../services/api";
 
 const careTypeLabels = {
   shoeing: "Ferrageamento",
@@ -17,8 +17,8 @@ export function DashboardPage() {
     try {
       setError("");
       const [dashboardData, alertSettings] = await Promise.all([
-        request("/dashboard"),
-        request("/alerts/settings"),
+        request({ url: "/api/dashboard", method: "GET" }),
+        request({ url: "/api/alerts/settings", method: "GET" }),
       ]);
       setData(dashboardData);
       setSettings(alertSettings);
@@ -34,12 +34,13 @@ export function DashboardPage() {
   async function handleSettingChange(careType, changes) {
     try {
       const current = settings.find((item) => item.careType === careType);
-      const updated = await request(`/alerts/settings/${careType}`, {
+      const updated = await request({
+        url: `/api/alerts/settings/${careType}`,
         method: "PUT",
-        body: JSON.stringify({
+        data: {
           intervalDays: Number(changes.intervalDays ?? current.intervalDays),
           enabled: typeof changes.enabled === "boolean" ? changes.enabled : Boolean(current.enabled),
-        }),
+        },
       });
 
       setSettings((prev) => prev.map((item) => (item.careType === careType ? updated : item)));

@@ -2,7 +2,7 @@ import * as authService from "../services/authService.js";
 
 export async function register(req, res, next) {
   try {
-    res.status(201).json(await authService.registerCompanyAccount(req.body));
+    res.status(403).json(await authService.getRegisterDisabledResponse());
   } catch (error) {
     next(error);
   }

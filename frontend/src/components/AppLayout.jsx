@@ -16,6 +16,7 @@ export function AppLayout() {
         <nav className="nav-list">
           <NavLink to="/" end>Dashboard</NavLink>
           <NavLink to="/horses">Cavalos</NavLink>
+          {profile?.user?.role === "admin" ? <NavLink to="/admin/users">Admin</NavLink> : null}
         </nav>
 
         <div className="sidebar-footer">

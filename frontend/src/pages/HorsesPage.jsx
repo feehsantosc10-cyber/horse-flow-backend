@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { request } from "../lib/api";
+import { request } from "../services/api";
 
 const initialForm = {
   name: "",
@@ -20,7 +20,7 @@ export function HorsesPage() {
   async function load() {
     try {
       setError("");
-      setHorses(await request("/horses"));
+      setHorses(await request({ url: "/api/horses", method: "GET" }));
     } catch (err) {
       setError(err.message);
     }
@@ -34,7 +34,7 @@ export function HorsesPage() {
     event.preventDefault();
     try {
       setSubmitting(true);
-      await request("/horses", { method: "POST", body: JSON.stringify(form) });
+      await request({ url: "/api/horses", method: "POST", data: form });
       setForm(initialForm);
       load();
     } catch (err) {
@@ -51,7 +51,7 @@ export function HorsesPage() {
     }
 
     try {
-      await request(`/horses/${horseId}`, { method: "DELETE" });
+      await request({ url: `/api/horses/${horseId}`, method: "DELETE" });
       load();
     } catch (err) {
       setError(err.message);

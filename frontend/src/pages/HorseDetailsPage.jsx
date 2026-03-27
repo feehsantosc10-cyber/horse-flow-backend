@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { request } from "../lib/api";
+import { request } from "../services/api";
 
 const feedingInitial = { feedingDate: "", feedType: "", feedQuantityKg: "", hayQuantityKg: "", notes: "" };
 const weightInitial = { recordDate: "", weightKg: "", notes: "" };
@@ -22,12 +22,12 @@ export function HorseDetailsPage() {
     try {
       setError("");
       const [horseRes, feedingRes, weightRes, careRes, reproductionRes, timelineRes] = await Promise.all([
-        request(`/horses/${horseId}`),
-        request(`/horses/${horseId}/feedings`),
-        request(`/horses/${horseId}/weights`),
-        request(`/horses/${horseId}/care-records`),
-        request(`/horses/${horseId}/reproduction-records`),
-        request(`/horses/${horseId}/timeline`),
+        request({ url: `/api/horses/${horseId}`, method: "GET" }),
+        request({ url: `/api/horses/${horseId}/feedings`, method: "GET" }),
+        request({ url: `/api/horses/${horseId}/weights`, method: "GET" }),
+        request({ url: `/api/horses/${horseId}/care-records`, method: "GET" }),
+        request({ url: `/api/horses/${horseId}/reproduction-records`, method: "GET" }),
+        request({ url: `/api/horses/${horseId}/timeline`, method: "GET" }),
       ]);
 
       setHorse(horseRes);
@@ -49,7 +49,11 @@ export function HorseDetailsPage() {
 
   async function submit(path, payload, reset) {
     try {
-      await request(path, { method: "POST", body: JSON.stringify(payload) });
+      await request({
+        url: `/api${path}`,
+        method: "POST",
+        data: payload,
+      });
       reset();
       load();
     } catch (err) {

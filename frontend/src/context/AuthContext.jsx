@@ -1,14 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { request } from "../lib/api";
+import { getProfile, loginUser } from "../services/authApi";
+import { getStoredProfile, getStoredToken, logout as logoutSession, saveAuthSession } from "../services/auth.js";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem("horseflow-token"));
-  const [profile, setProfile] = useState(() => {
-    const raw = localStorage.getItem("horseflow-profile");
-    return raw ? JSON.parse(raw) : null;
-  });
+  const [token, setToken] = useState(() => getStoredToken());
+  const [profile, setProfile] = useState(() => getStoredProfile());
   const [loading, setLoading] = useState(Boolean(token));
 
   useEffect(() => {
@@ -19,13 +17,13 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const me = await request("/auth/me");
+        const me = await getProfile();
         const normalized = {
           token,
-          user: { id: me.id, name: me.name, email: me.email, role: me.role },
+          user: { id: me.id, name: me.name, email: me.email, role: me.role, active: Boolean(me.active) },
           company: { id: me.company_id, name: me.company_name, email: me.company_email },
         };
-        localStorage.setItem("horseflow-profile", JSON.stringify(normalized));
+        saveAuthSession(normalized);
         setProfile(normalized);
       } catch {
         logout();
@@ -38,29 +36,31 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   function persist(result) {
-    localStorage.setItem("horseflow-token", result.token);
-    localStorage.setItem("horseflow-profile", JSON.stringify(result));
+    saveAuthSession(result);
     setToken(result.token);
     setProfile(result);
   }
 
   async function login(payload) {
-    persist(await request("/auth/login", { method: "POST", body: JSON.stringify(payload) }));
-  }
-
-  async function register(payload) {
-    persist(await request("/auth/register", { method: "POST", body: JSON.stringify(payload) }));
+    persist(await loginUser(payload));
   }
 
   function logout() {
-    localStorage.removeItem("horseflow-token");
-    localStorage.removeItem("horseflow-profile");
+    logoutSession();
     setToken(null);
     setProfile(null);
   }
 
   const value = useMemo(
-    () => ({ token, profile, loading, isAuthenticated: Boolean(token), login, register, logout }),
+    () => ({
+      token,
+      profile,
+      loading,
+      isAuthenticated: Boolean(token),
+      isAdmin: profile?.user?.role === "admin",
+      login,
+      logout,
+    }),
     [token, profile, loading]
   );
 

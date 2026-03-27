@@ -64,6 +64,7 @@ button {
 
 .auth-grid, .content-grid, .stats-grid { display: grid; gap: 20px; }
 .auth-grid, .content-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.auth-grid-single { grid-template-columns: minmax(0, 520px); }
 .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 .panel, .stat-card, .timeline-card {
@@ -100,6 +101,17 @@ button {
 
 .timeline-list { display: grid; gap: 12px; }
 .timeline-card { border-radius: 18px; padding: 16px; }
+.admin-user-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+.action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .timeline-card.overdue { border-color: rgba(157, 63, 63, 0.4); }
 .timeline-card.upcoming { border-color: rgba(47, 122, 69, 0.4); }
 .link-card { text-decoration: none; color: inherit; }
@@ -152,5 +164,6 @@ button {
   .settings-row { grid-template-columns: 1fr; }
   .horse-list-card,
   .horse-card-main,
-  .page-header { align-items: flex-start; flex-direction: column; }
+  .page-header,
+  .admin-user-card { align-items: flex-start; flex-direction: column; }
 }
