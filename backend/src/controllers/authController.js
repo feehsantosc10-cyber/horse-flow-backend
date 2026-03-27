@@ -23,3 +23,11 @@ export async function me(req, res, next) {
     next(error);
   }
 }
+
+export async function createInitialAdmin(req, res, next) {
+  try {
+    res.json(await authService.createInitialAdmin());
+  } catch (error) {
+    next(error);
+  }
+}

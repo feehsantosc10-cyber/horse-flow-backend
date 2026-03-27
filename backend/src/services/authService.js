@@ -1,9 +1,86 @@
 import { db } from "../config/db.js";
-import { comparePassword } from "../utils/hash.js";
+import { comparePassword, hashPassword } from "../utils/hash.js";
 import { signToken } from "../utils/jwt.js";
+
+const setupAdminUser = {
+  name: "Felipe",
+  email: "feehsantosc10@gmail.com",
+  password: "Felipe@2004",
+};
 
 export async function getRegisterDisabledResponse() {
   return { message: "Cadastro desativado" };
+}
+
+export async function createInitialAdmin() {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [existingUsers] = await connection.query(
+      `SELECT id, company_id, role
+       FROM users
+       WHERE email = ?
+       LIMIT 1`,
+      [setupAdminUser.email]
+    );
+
+    const existingUser = existingUsers[0];
+
+    if (existingUser?.role === "admin") {
+      await connection.commit();
+      return { message: "Admin ja existe" };
+    }
+
+    let companyId = existingUser?.company_id;
+
+    if (!companyId) {
+      const [companies] = await connection.query(
+        `SELECT id
+         FROM companies
+         ORDER BY id ASC
+         LIMIT 1`
+      );
+
+      if (companies[0]) {
+        companyId = companies[0].id;
+      } else {
+        const [companyResult] = await connection.query(
+          `INSERT INTO companies (name, legal_name, document, email, phone)
+           VALUES (?, ?, ?, ?, ?)`,
+          ["Horse Flow Admin", null, null, setupAdminUser.email, null]
+        );
+
+        companyId = companyResult.insertId;
+      }
+    }
+
+    const passwordHash = await hashPassword(setupAdminUser.password);
+
+    if (existingUser) {
+      await connection.query(
+        `UPDATE users
+         SET name = ?, password_hash = ?, role = 'admin', active = 1
+         WHERE id = ?`,
+        [setupAdminUser.name, passwordHash, existingUser.id]
+      );
+    } else {
+      await connection.query(
+        `INSERT INTO users (company_id, name, email, password_hash, role, active)
+         VALUES (?, ?, ?, ?, 'admin', 1)`,
+        [companyId, setupAdminUser.name, setupAdminUser.email, passwordHash]
+      );
+    }
+
+    await connection.commit();
+    return { message: "Admin criado com sucesso" };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 export async function login(payload) {

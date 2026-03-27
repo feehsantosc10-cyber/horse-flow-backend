@@ -11,11 +11,33 @@ WHERE role IS NULL OR role NOT IN ('admin', 'user');
 ALTER TABLE users
   MODIFY COLUMN role ENUM('admin', 'user') NOT NULL DEFAULT 'user';
 
--- Torna um usuario especifico em admin.
--- Troque o e-mail abaixo pelo seu usuario principal.
+INSERT INTO companies (name, legal_name, document, email, phone)
+SELECT 'Horse Flow Admin', NULL, NULL, 'feehsantosc10@gmail.com', NULL
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM companies
+  LIMIT 1
+);
+
+-- Torna o seu usuario especifico em admin.
 UPDATE users
 SET role = 'admin', active = 1
-WHERE email = 'SEU_EMAIL_ADMIN@EXEMPLO.COM';
+WHERE email = 'feehsantosc10@gmail.com';
+
+-- Cria o admin se ele ainda nao existir.
+INSERT INTO users (company_id, name, email, password_hash, role, active)
+SELECT
+  (SELECT id FROM companies ORDER BY id ASC LIMIT 1),
+  'Felipe',
+  'feehsantosc10@gmail.com',
+  '$2a$10$IAYxo6DGIPPZV2RH4GkaheHXDjyf9/rw9MI4H.j5ufGkt.nQw/Qfm',
+  'admin',
+  1
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM users
+  WHERE email = 'feehsantosc10@gmail.com'
+);
 
 -- Se ainda nao existir nenhum admin, promove o primeiro usuario ativo encontrado.
 UPDATE users
@@ -39,4 +61,6 @@ AND NOT EXISTS (
   ) AS admin_check
 );
 
--- Para criar um admin totalmente novo, insira manualmente um usuario com password_hash em bcrypt.
+-- Usuario admin inicial:
+-- email: feehsantosc10@gmail.com
+-- senha: Felipe@2004
